@@ -1,10 +1,15 @@
-﻿namespace CamerasInfo
+﻿using CamerasInfo.Camera;
+using CamerasInfo.Context;
+using CamerasInfo.Service;
+using CamerasInfo.Dialog;
+
+namespace CamerasInfo
 {
-    internal class Program
+    class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            Console.WriteLine("Hello, World!");
+            await Dialog.Dialog.InitialDialogAsync();
         }
     }
 }
