@@ -4,113 +4,156 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.NetworkInformation;
-using CamerasInfo.Model;
 using System.Xml.Serialization;
 using CamerasInfo.Service;
 using CamerasInfo.Context;
-using CamerasInfo.Camera;
 using CamerasInfo.Helpers;
 using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
+using System.Net;
+using System.Drawing;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using MongoDB.Bson;
 
 namespace CamerasInfo.Managers
 {
     public static class CamManager
     {
-        private  static Ping PingSender { get; set; } = new Ping();
-
-        public static PingReply? PingReply { get; set; }
-
         public static Ping_MongoDB PingMongoDB { get; set; } = new Ping_MongoDB();
 
-        private static CamInfoContext dbContext = new CamInfoContext();
+        private static CamInfoContext dbContext = new();
 
-        private static CameraService _service = new CameraService(dbContext);
+        private static CameraService _service = new(dbContext);
 
-        private static List<CameraInfo> Cameras = new List<CameraInfo>();
+        private static AvConfigService _avConfigService = new(dbContext);
 
-        public static async Task InitializeCameraPing()
+        private static List<Camera> cameras = new();
+
+        private static List<Config> avConfigs = new();
+
+        private static Dictionary<int, Task> pingTasks = new();
+
+        public static List<Config> configs = dbContext.Configs.ToList();
+
+        public static async void InitializeCameraPing()
         {
             try
             {
+                //Return the disponibility of every config associated with a camera on the database.
+                await ReturnDisponibility();
                 //Get all cameras from renovias database
-                Cameras = await _service.GetCameras();
+                cameras = _service.GetCameras();
+                if (cameras.Any())
+                    PingConfiguredCameras();
 
-                if (Cameras.Any())
-                {
-                    await PingCamerasFromDb();
-                }
             }
             catch (PingException pEx)
             {
                 Console.WriteLine(pEx.Message);
             }
-        }
-
-        private static async Task<PingReply> PingCamera(string address)
-        {
-            try
+            catch(Exception ex)
             {
-                return await PingSender.SendPingAsync(address);             
-            }
-            catch (PingException pEx)
-            {
-                throw new PingException($"Failed to PING the IP: {address} " +
-                    $"\nError Message: " + pEx.Message );
+                Console.WriteLine(ex.Message);
             }
         }
-
-        private static async Task PingCamerasFromDb()
+        
+        private static async Task ReturnDisponibility()
         {
-            //Ping all cameras at a range set by intervalToPing
+            avConfigs = await _avConfigService.GetConfigs();
+            if (!avConfigs.Any())
+                throw new PingException("No config found.");
+            foreach(Config conf in avConfigs)
+            {
+                float percentDisponibility = MongoDbManager.GetDisponibility(conf.Id);
+                conf.Value = percentDisponibility;
+                _ = _avConfigService.PutConfig(conf.Id, conf);
+                Console.WriteLine($"Config {conf.Id} has {percentDisponibility}% disponibility.");
+            }       
+        }
+
+        private static void PingConfiguredCameras()
+        {
+            if (!configs.Any())
+                throw new PingException("No configuration found.");
+
+            foreach (Camera camera in cameras)
+            {
+                foreach (Config config in configs)
+                {
+                    if (camera.AvailabilityConfigs.Contains(config))
+                    {
+                        Task t = Task.Run(() => PingConfiguredCamera(config, camera));
+
+                        if (!pingTasks.ContainsKey(config.Id))
+                            pingTasks.Add(config.Id, t);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Ping all configured cameras from oracle Db.
+        /// </summary>
+        /// <param name="config">Config object to specify ping parameters.</param>
+        /// <param name="camToPing">Camera object to ping.</param>
+        private static void PingConfiguredCamera(Config config, Camera camToPing)
+        {
+            //Creates new document template to save on Mongo DB.
+            Ping_MongoDB mongoDoc = new Ping_MongoDB();
+
             DateTime intervalToPing = DateTime.Now;
-            intervalToPing.AddMilliseconds(1000);
+            mongoDoc.AvailabilityConfig = config.Id;
 
-            int cont = 0;
+            mongoDoc.Counter = MongoDbManager.DocumentLastCount(config.Id);
+            if (mongoDoc.Counter < 0)
+                mongoDoc.Counter = 0;
+       
+            //mongoDoc = (Config)bson;
+            Ping PingSender = new Ping();
             while (true)
-            {           
-                if(intervalToPing < DateTime.Now)
+            {
+                if (intervalToPing.AddMilliseconds(config.PingTime) < DateTime.Now)
                 {
                     intervalToPing = DateTime.Now;
-                    cont = 0;
 
-                    //Keeps track of the time took to ping all cameras.
-                    Stopwatch stopwatch = new Stopwatch();
-                    stopwatch.Start();
-                    foreach (CameraInfo cam in Cameras)
-                    { 
-                        await Task.Run(async () =>
+                    //Initalize async task to ping.
+                    Task.Run(async () =>
+                    {
+                        try
                         {
-                            try
-                            {
-                                DateTime pingTime = DateTime.UtcNow;
-                                string formattedPingTime = FormatDate.ToLocalTime(pingTime);
+                            DateTime pingTime = DateTime.UtcNow;
+                            //string formattedPingTime = FormatDate.ToLocalTime(pingTime);
+                            mongoDoc.DateTime = DateTime.UtcNow;
 
-                                PingReply = await PingCamera(cam.Ip);
+                            //Get the Ping response.                  
+                            PingReply PingReply = PingSender.Send(camToPing.Ip); //PingCamera(camToPing.Ip);
+                            mongoDoc.Counter++;
 
-                                if (PingReply.Status == IPStatus.Success)
-                                {
-                                    Console.WriteLine($"Ping to {cam.Ip} was successful.");
-                                    MongoDbManager.SaveToMongo(cam.Ip, formattedPingTime, true);
-                                    cont++;
-                                }
-                            }
-                            catch (PingException pEx) 
+                            if (PingReply.Status == IPStatus.Success)
                             {
-                                throw (pEx);
+                                config.currentStatus = "online";
+                                Console.WriteLine($"Ping to {camToPing.Ip} with config {config.Id} was successful.");
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                Console.WriteLine($"Unexpected error ocurred: {ex.Message}");
+                                config.currentStatus = "offline";
+                                Console.WriteLine($"Failed to PING the IP: {camToPing.Ip} with config {config.Id}");
                             }
-                        });
-                    }
-                    stopwatch.Stop();
-                    // Get the elapsed time the operation took to complete.
-                    TimeSpan elapsedTime = stopwatch.Elapsed;
 
-                    Console.WriteLine("Cont: " + cont.ToString() + " Elapsed time: " + elapsedTime.ToString());
+                            mongoDoc.Status = config.currentStatus;
+                            MongoDbManager.SaveToMongo(mongoDoc);
+                        }
+                        catch (PingException pEx)
+                        {
+                            Console.WriteLine($"Error Message: {pEx.Message}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Unexpected error ocurred: {ex.Message}");
+                        }
+                    });
                 }
                 Thread.Sleep(200);
             }

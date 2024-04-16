@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\guilh\\Projetos\\WTManagement\\CamerasInfo\\CamerasInfo\\CamerasInfo.csproj": {}
+    "C:\\Users\\guilh\\Projetos\\WTManagement\\CamerasInfo\\CamerasInfo\\CamerasInfo\\CamerasInfo.csproj": {}
   },
   "projects": {
-    "C:\\Users\\guilh\\Projetos\\WTManagement\\CamerasInfo\\CamerasInfo\\CamerasInfo.csproj": {
+    "C:\\Users\\guilh\\Projetos\\WTManagement\\CamerasInfo\\CamerasInfo\\CamerasInfo\\CamerasInfo.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\guilh\\Projetos\\WTManagement\\CamerasInfo\\CamerasInfo\\CamerasInfo.csproj",
+        "projectUniqueName": "C:\\Users\\guilh\\Projetos\\WTManagement\\CamerasInfo\\CamerasInfo\\CamerasInfo\\CamerasInfo.csproj",
         "projectName": "CamerasInfo",
-        "projectPath": "C:\\Users\\guilh\\Projetos\\WTManagement\\CamerasInfo\\CamerasInfo\\CamerasInfo.csproj",
+        "projectPath": "C:\\Users\\guilh\\Projetos\\WTManagement\\CamerasInfo\\CamerasInfo\\CamerasInfo\\CamerasInfo.csproj",
         "packagesPath": "C:\\Users\\guilh\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\guilh\\Projetos\\WTManagement\\CamerasInfo\\CamerasInfo\\obj\\",
+        "outputPath": "C:\\Users\\guilh\\Projetos\\WTManagement\\CamerasInfo\\CamerasInfo\\CamerasInfo\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

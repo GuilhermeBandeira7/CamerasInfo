@@ -1,15 +1,16 @@
-﻿using CamerasInfo.Camera;
-using CamerasInfo.Context;
+﻿using CamerasInfo.Context;
 using CamerasInfo.Service;
 using CamerasInfo.Dialog;
+using CamerasInfo.Managers;
 
 namespace CamerasInfo
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
-            await Dialog.Dialog.InitialDialogAsync();
+            Dialog.Dialog.InitialDialogAsync();
+            Console.ReadLine();
         }
     }
 }

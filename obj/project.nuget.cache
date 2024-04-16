@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "F0lfo6/rjqT5571qFSCztn0CQtqBQE4EmLGPNBaSfZEOh/M/a3rXGr9LHY6uhWvHHQxQYkUoEm1BkbgSRy/vpg==",
+  "dgSpecHash": "8/kM6P6ewRhDU6h2tcmMmOCXf3xVxqBfyjyfoOhO0cqW3tBJ2uWHz8VbbyT1GQzSeB5ZWjmQAMdsbUnHCwvSqA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\guilh\\Projetos\\WTManagement\\CamerasInfo\\CamerasInfo\\CamerasInfo.csproj",
+  "projectFilePath": "C:\\Users\\guilh\\Projetos\\WTManagement\\CamerasInfo\\CamerasInfo\\CamerasInfo\\CamerasInfo.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\guilh\\.nuget\\packages\\awssdk.core\\3.7.100.14\\awssdk.core.3.7.100.14.nupkg.sha512",
     "C:\\Users\\guilh\\.nuget\\packages\\awssdk.securitytoken\\3.7.100.14\\awssdk.securitytoken.3.7.100.14.nupkg.sha512",

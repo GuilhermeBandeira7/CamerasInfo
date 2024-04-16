@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CamerasInfo.Camera
+namespace CamerasInfo
 {
-    public class CameraInfo
+    public class Camera
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Ip { get; set; } = string.Empty;
         public string Direction { get; set; } = string.Empty;
@@ -16,6 +16,6 @@ namespace CamerasInfo.Camera
         public string Parents { get; set; } = string.Empty;
         public string LATLNG { get; set; } = string.Empty;
 
-        public List<AvailabilityConfig> AvailabilityConfigs { get; set; } = new();
+        public List<Config> AvailabilityConfigs { get; set; } = new();
     }
 }

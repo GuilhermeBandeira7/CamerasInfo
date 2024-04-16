@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CamerasInfo.Camera
+namespace CamerasInfo
 {
-    public class AvailabilityConfig
+    public class Config
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public float Value { get; set; }
         public double PingTime { get; set; }
@@ -17,8 +17,8 @@ namespace CamerasInfo.Camera
         public double VerificationTime { get; set; }
         public string currentStatus { get; set; } = string.Empty;
 
-        [ForeignKey("CameraInfoId")]
-        public CameraInfo Camera { get; set; } = new();
+        [ForeignKey("CameraId")]
+        public Camera Camera { get; set; } = new();
 
 
     }

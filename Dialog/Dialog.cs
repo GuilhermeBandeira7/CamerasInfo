@@ -10,13 +10,13 @@ namespace CamerasInfo.Dialog
 {
     public static class Dialog
     {
-        public static async Task InitialDialogAsync()
+        public static void InitialDialogAsync()
         {
             Console.WriteLine("=======================");
             Console.WriteLine("Welcome to CamerasInfo");
             Console.WriteLine("=======================\n");
 
-            await CamManager.InitializeCameraPing();
+            CamManager.InitializeCameraPing();
         }
     }
 }

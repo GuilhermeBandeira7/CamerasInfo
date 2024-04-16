@@ -1,5 +1,4 @@
-﻿using CamerasInfo.Camera;
-using CamerasInfo.Context;
+﻿using CamerasInfo.Context;
 using CamerasInfo.Helpers;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -20,11 +19,11 @@ namespace CamerasInfo.Service
         }
 
         //Whoever calls this function needs to make sure that returned != null
-        public async Task<List<CameraInfo>> GetCameras()
+        public List<Camera> GetCameras()
         {
             try
             {
-                List<CameraInfo> cameras = await _context.Camera.ToListAsync();
+                List<Camera> cameras = _context.Cameras.Include(cam => cam.AvailabilityConfigs).ToList();
                 if(!cameras.Any())
                 {
                     throw new Exception("No Cameras found.");
@@ -39,11 +38,11 @@ namespace CamerasInfo.Service
         }
 
         //Whoever calls this functions needs to make sure that returned != null
-        public async Task<CameraInfo> GetCameraById(long id)
+        public async Task<Camera> GetCameraById(long id)
         {
             try
             {
-                CameraInfo? camera = await _context.Camera.Where(cam => cam.Id == id).FirstOrDefaultAsync();
+                Camera? camera = await _context.Cameras.Where(cam => cam.Id == id).FirstOrDefaultAsync();
                 if(camera != null)
                     return camera;
                 throw new Exception();
@@ -51,15 +50,15 @@ namespace CamerasInfo.Service
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return new CameraInfo();
+                return new Camera();
             }
         }
 
-        public async Task<Response> PutCamera(long id, CameraInfo camInfo)
+        public async Task<Response> PutCamera(long id, Camera camInfo)
         {
             try
             {
-                CameraInfo? cam = await _context.Camera.Where(cam => cam.Id == id).FirstOrDefaultAsync();
+                Camera? cam = await _context.Cameras.Where(cam => cam.Id == id).FirstOrDefaultAsync();
                 if(cam != null)
                 {
                     _context.Entry(camInfo).State = EntityState.Modified;
@@ -75,11 +74,11 @@ namespace CamerasInfo.Service
             }
         }
 
-        public async Task<Response> PostCamera(CameraInfo camInfo)
+        public async Task<Response> PostCamera(Camera camInfo)
         {
             try
             {
-                await _context.Camera.AddAsync(camInfo);
+                await _context.Cameras.AddAsync(camInfo);
                 await _context.SaveChangesAsync();
                 return new Response(true, "Camera added successfully.");
             }
@@ -93,7 +92,7 @@ namespace CamerasInfo.Service
         {
             try
             {
-                await _context.Camera.Where(cam => cam.Id == id).ExecuteDeleteAsync();
+                await _context.Cameras.Where(cam => cam.Id == id).ExecuteDeleteAsync();
                 await _context.SaveChangesAsync();
                 return new Response(true, "Camera deleted successfully.");
             }

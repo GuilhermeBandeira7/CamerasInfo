@@ -3,15 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using CamerasInfo.Camera;
 using System.Threading.Tasks;
 
 namespace CamerasInfo.Context
 {
     public class CamInfoContext: DbContext
     {
-        public DbSet<CameraInfo> Camera { get; set; }
-        public DbSet<AvailabilityConfig> AvailabilityConfigs { get; set; }
+        public DbSet<Camera> Cameras { get; set; }
+        public DbSet<Config> Configs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
