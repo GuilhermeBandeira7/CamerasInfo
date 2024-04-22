@@ -37,15 +37,15 @@ namespace CamerasInfo.Managers
 
         public static List<Config> configs = dbContext.Configs.ToList();
 
-        public static async void InitializeCameraPing()
+        public static void InitializeCameraPing()
         {
             try
             {
                 //Return the disponibility of every config associated with a camera on the database.
-                await ReturnDisponibility();
+                Task.Run(ReturnDisponibility);
                 //Get all cameras from renovias database
                 cameras = _service.GetCameras();
-                if (cameras.Any())
+                if (cameras.Any() && cameras != null)
                     PingConfiguredCameras();
 
             }
@@ -61,16 +61,22 @@ namespace CamerasInfo.Managers
         
         private static async Task ReturnDisponibility()
         {
-            avConfigs = await _avConfigService.GetConfigs();
-            if (!avConfigs.Any())
-                throw new PingException("No config found.");
-            foreach(Config conf in avConfigs)
+            while(true)
             {
-                float percentDisponibility = MongoDbManager.GetDisponibility(conf.Id);
-                conf.Value = percentDisponibility;
-                _ = _avConfigService.PutConfig(conf.Id, conf);
-                Console.WriteLine($"Config {conf.Id} has {percentDisponibility}% disponibility.");
-            }       
+                avConfigs = await _avConfigService.GetConfigs();
+                if (!avConfigs.Any())
+                    throw new PingException("No config found.");
+
+                foreach (Config conf in avConfigs)
+                {
+                    float percentDisponibility = MongoDbManager.GetDisponibility(conf.Id);
+                    conf.Value = percentDisponibility;
+                    _ = _avConfigService.PutConfig(conf.Id, conf);
+                    Console.WriteLine($"Config {conf.Id} has {percentDisponibility}% disponibility.");
+                    Thread.Sleep(100);
+                }
+                Thread.Sleep(5000);
+            }
         }
 
         private static void PingConfiguredCameras()
@@ -110,7 +116,6 @@ namespace CamerasInfo.Managers
             if (mongoDoc.Counter < 0)
                 mongoDoc.Counter = 0;
        
-            //mongoDoc = (Config)bson;
             Ping PingSender = new Ping();
             while (true)
             {
@@ -124,7 +129,6 @@ namespace CamerasInfo.Managers
                         try
                         {
                             DateTime pingTime = DateTime.UtcNow;
-                            //string formattedPingTime = FormatDate.ToLocalTime(pingTime);
                             mongoDoc.DateTime = DateTime.UtcNow;
 
                             //Get the Ping response.                  

@@ -56,7 +56,7 @@ namespace CamerasInfo
         private static float ReturnDisponibility(TimeSpan tOffline, TimeSpan totalTime)
         {
             float offlineFraction = (float)tOffline.TotalSeconds / (float)totalTime.TotalSeconds;
-            float onlinePercentage = 100 - offlineFraction;
+            float onlinePercentage = (1 - offlineFraction) * (float)100;
 
             return onlinePercentage;
         }
