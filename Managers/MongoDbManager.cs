@@ -46,7 +46,7 @@ namespace CamerasInfo.Managers
                 DateTime varificationTime;
                 TimeSpan totalTime = new();
                 //Get the config
-                Config? config = CamManager.configs.Where(c => c.Id == avConfigId).FirstOrDefault();
+                Config? config = CamManager.Configs.Where(c => c.Id == avConfigId).FirstOrDefault();
                 if (config != null)
                 {
                     DateTime dateTime = DateTime.UtcNow.AddSeconds(-config.VerificationTime);

@@ -132,3 +132,9 @@ C:\Users\guilh\Projetos\WTManagement\CamerasInfo\CamerasInfo\CamerasInfo\obj\Deb
 C:\Users\guilh\Projetos\WTManagement\CamerasInfo\CamerasInfo\CamerasInfo\obj\Debug\net7.0\CamerasInfo.pdb
 C:\Users\guilh\Projetos\WTManagement\CamerasInfo\CamerasInfo\CamerasInfo\obj\Debug\net7.0\CamerasInfo.genruntimeconfig.cache
 C:\Users\guilh\Projetos\WTManagement\CamerasInfo\CamerasInfo\CamerasInfo\obj\Debug\net7.0\ref\CamerasInfo.dll
+C:\Users\guilh\Projetos\WTManagement\CamerasInfo\CamerasInfo\CamerasInfo\bin\Debug\net7.0\System.Data.SqlClient.dll
+C:\Users\guilh\Projetos\WTManagement\CamerasInfo\CamerasInfo\CamerasInfo\bin\Debug\net7.0\runtimes\win-arm64\native\sni.dll
+C:\Users\guilh\Projetos\WTManagement\CamerasInfo\CamerasInfo\CamerasInfo\bin\Debug\net7.0\runtimes\win-x64\native\sni.dll
+C:\Users\guilh\Projetos\WTManagement\CamerasInfo\CamerasInfo\CamerasInfo\bin\Debug\net7.0\runtimes\win-x86\native\sni.dll
+C:\Users\guilh\Projetos\WTManagement\CamerasInfo\CamerasInfo\CamerasInfo\bin\Debug\net7.0\runtimes\unix\lib\netcoreapp2.1\System.Data.SqlClient.dll
+C:\Users\guilh\Projetos\WTManagement\CamerasInfo\CamerasInfo\CamerasInfo\bin\Debug\net7.0\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll

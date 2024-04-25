@@ -1,21 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net.NetworkInformation;
-using System.Xml.Serialization;
+﻿using System.Net.NetworkInformation;
 using CamerasInfo.Service;
 using CamerasInfo.Context;
 using CamerasInfo.Helpers;
-using System.Diagnostics.Metrics;
-using System.Globalization;
-using System.Diagnostics;
-using Microsoft.EntityFrameworkCore;
-using System.Net;
-using System.Drawing;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using MongoDB.Bson;
 
 namespace CamerasInfo.Managers
 {
@@ -23,24 +9,25 @@ namespace CamerasInfo.Managers
     {
         public static Ping_MongoDB PingMongoDB { get; set; } = new Ping_MongoDB();
 
-        private static CamInfoContext dbContext = new();
+        private static readonly CamInfoContext dbContext = new();
 
-        private static CameraService _service = new(dbContext);
+        private static readonly CameraService _service = new(dbContext);
 
-        private static AvConfigService _avConfigService = new(dbContext);
+        private static readonly AvConfigService _avConfigService = new(dbContext);
 
         private static List<Camera> cameras = new();
 
         private static List<Config> avConfigs = new();
 
-        private static Dictionary<int, Task> pingTasks = new();
+        private static Dictionary<int, Task> PingTasks = new();
 
-        public static List<Config> configs = dbContext.Configs.ToList();
+        public static List<Config> Configs = dbContext.Configs.ToList();
 
         public static void InitializeCameraPing()
         {
             try
             {
+                DbChangeTracker.InitializeWatcher();
                 //Return the disponibility of every config associated with a camera on the database.
                 Task.Run(ReturnDisponibility);
                 //Get all cameras from renovias database
@@ -81,19 +68,19 @@ namespace CamerasInfo.Managers
 
         private static void PingConfiguredCameras()
         {
-            if (!configs.Any())
+            if (!Configs.Any())
                 throw new PingException("No configuration found.");
 
             foreach (Camera camera in cameras)
             {
-                foreach (Config config in configs)
+                foreach (Config config in Configs)
                 {
                     if (camera.AvailabilityConfigs.Contains(config))
                     {
                         Task t = Task.Run(() => PingConfiguredCamera(config, camera));
 
-                        if (!pingTasks.ContainsKey(config.Id))
-                            pingTasks.Add(config.Id, t);
+                        if (!PingTasks.ContainsKey(config.Id))
+                            PingTasks.Add(config.Id, t);
                     }
                 }
             }
