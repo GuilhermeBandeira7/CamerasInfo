@@ -38,11 +38,20 @@ namespace CamerasInfo.Service
 
         public async Task<List<Config>> GetConfigs()
         {
-            List<Config>? config = await _context.Configs.ToListAsync();
-            
-            if (config.Any())
+            try
+            {
+                List<Config>? config = await _context.Configs.ToListAsync();
+
+                if (!config.Any())
+                    throw new Exception("Any configuration was found.");
                 return config;
-            return new();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return new();
+
+            }
         }
 
         public async Task<Response> PostConfig(Config config)

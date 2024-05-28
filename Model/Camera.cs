@@ -15,6 +15,9 @@ namespace CamerasInfo
         public string Highway { get; set; } = string.Empty;
         public string Parents { get; set; } = string.Empty;
         public string LATLNG { get; set; } = string.Empty;
+        public string? KmComplement { get; set; } = string.Empty;
+        public string? Status { get; set; } = string.Empty;
+        public DateTime? LastVerification { get; set; }
 
         public List<Config> AvailabilityConfigs { get; set; } = new();
     }

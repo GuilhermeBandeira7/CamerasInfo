@@ -94,15 +94,25 @@ namespace CamerasInfo.Managers
 
         public static long DocumentLastCount(long avConfigId)
         {
-            var filter = Builders<BsonDocument>.Filter.Eq("AvailabilityConfig", avConfigId);
-            var sort = Builders<BsonDocument>.Sort.Descending("_id");
-            BsonDocument document = mongoCollection.Find(filter).Sort(sort).FirstOrDefault();
+            try
+            {
 
-            // Deserialize BsonDocument to Person object
-            Ping_MongoDB? doc = document != null ? BsonSerializer.Deserialize<Ping_MongoDB>(document) : null;
-            if (doc != null)
-                return doc.Counter;
-            return -1;
+                var filter = Builders<BsonDocument>.Filter.Eq("AvailabilityConfig", avConfigId);
+                var sort = Builders<BsonDocument>.Sort.Descending("_id");
+                BsonDocument document = mongoCollection.Find(filter).Sort(sort).FirstOrDefault();
+
+                // Deserialize BsonDocument to Person object
+                Ping_MongoDB? doc = document != null ? BsonSerializer.Deserialize<Ping_MongoDB>(document) : null;
+
+                if (doc != null)
+                    return doc.Counter;
+                return -1;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return -1;
+            }
         }
     }
 }

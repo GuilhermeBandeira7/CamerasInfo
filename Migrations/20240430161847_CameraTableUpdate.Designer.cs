@@ -3,6 +3,7 @@ using System;
 using CamerasInfo.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Oracle.EntityFrameworkCore.Metadata;
 
@@ -11,9 +12,11 @@ using Oracle.EntityFrameworkCore.Metadata;
 namespace CamerasInfo.Migrations
 {
     [DbContext(typeof(CamInfoContext))]
-    partial class CamInfoContextModelSnapshot : ModelSnapshot
+    [Migration("20240430161847_CameraTableUpdate")]
+    partial class CameraTableUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
