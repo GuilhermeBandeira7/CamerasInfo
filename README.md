@@ -1,4 +1,4 @@
-<h1 align="center"> Camara Tracker </h1>
+<h1 align="center"> Camera Tracker </h1>
 
 ## 🎯 About the Project
  C# Console Application for monitoring availabily of Cameras. 
