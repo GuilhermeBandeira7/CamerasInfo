@@ -15,4 +15,4 @@
 
 ## 📚 Architecute
 
- Factory design patter, all data is stored and retrieved from Mongo DB.
+The project uses services and Enttity framework with and Oracle Database to save availability calculated data. Camara data for every second stored and retrieved from Mongo DB.
