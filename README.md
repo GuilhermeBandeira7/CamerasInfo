@@ -13,6 +13,6 @@
  .NET8 runtime of later if required to run the application  
 <br>
 
-## 📚 Documentação e arquitetura
+## 📚 Architecute
 
  Factory design patter, all data is stored and retrieved from Mongo DB.
