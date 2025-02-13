@@ -87,6 +87,9 @@ namespace CamerasInfo.Managers
                 {
                     float percentDisponibility = await MongoDbManager.GetDisponibilityAsync(conf.Id);
                     conf.Value = percentDisponibility;
+                    Camera? cam = cameras.Where(c => c.AvailabilityConfigs.Select(a => a.Id).Contains(conf.Id)).FirstOrDefault();
+                    if (cam != null)
+                        conf.currentStatus = cam.Status;
                     _ = _avConfigService.PutConfig(conf.Id, conf);
                     //Console.WriteLine($"Config {conf.Id} has {percentDisponibility}% disponibility.");
                     Thread.Sleep(100);
