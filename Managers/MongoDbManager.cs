@@ -20,7 +20,7 @@ namespace CamerasInfo.Managers
         //Mongo DB instance
         private static MongoClient Client { get; set; } = new MongoClient(ConnectionString);
         private static IMongoDatabase mongoDatabase { get; set; } = Client.GetDatabase(DatabaseName);
-        private static IMongoCollection<BsonDocument> mongoCollection { get; set; } = 
+        private static IMongoCollection<BsonDocument> mongoCollection { get; set; } =
             mongoDatabase.GetCollection<BsonDocument>(CollectionName);
 
 
@@ -39,12 +39,66 @@ namespace CamerasInfo.Managers
             mongoCollection.InsertOne(document);
         }
 
-        public static float GetDisponibility(int avConfigId)
+        public static async Task<List<BsonDocument>> GetDataHourlyAsync(long avConfigId, long verificationTime, int segmentSize)
+        {
+            var filterBuilder = Builders<BsonDocument>.Filter;
+            var builder = Builders<BsonDocument>.Filter;
+
+            // Create a list to hold all the results
+            List<BsonDocument> allResults = new();
+
+            // Create a list of tasks to query each hourly data
+            List<Task<List<BsonDocument>>> tasks = new();
+
+            double steps = verificationTime/segmentSize;
+
+
+            // Loop through each hour in the month
+            for (int index = 0; index < steps; index++)
+            {
+                // Calculate the range for the hour
+                var startOfHour = verificationTime + (index * segmentSize);  // Verification time + number of seconds per hour
+                var endOfHour = startOfHour + segmentSize;  // One hour later
+
+                // Build the filter for the current hour range
+                var filters = builder.And(new FilterDefinition<BsonDocument>[]
+                {
+                    builder.Eq("AvailabilityConfig", avConfigId),
+                    builder.Lte("Status", "offline"),
+                    builder.Gte("DateTime", startOfHour),
+                    builder.Lt("DateTime", endOfHour)  // Less than the next hour
+                });
+
+                // Add the task to the list
+                tasks.Add(Task.Run(async () =>
+                {
+                    MongoClient readClient = new(ConnectionString);
+                    IMongoDatabase database = readClient.GetDatabase(DatabaseName);
+                    IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(CollectionName);
+
+                    var queryResult = await collection.Find(filters).ToListAsync();
+                    return queryResult;
+                }));
+            }
+
+            // Wait for all tasks to complete
+            var results = await Task.WhenAll(tasks);
+
+            // Combine all results into a single list
+            foreach (var result in results)
+            {
+                allResults.AddRange(result);
+            }
+
+            return allResults;
+        }
+
+        public static async Task<float> GetDisponibilityAsync(int avConfigId)
         {
             try
             {
                 DateTime varificationTime;
-                TimeSpan totalTime = new();
+                //TimeSpan totalTime = new();
                 //Get the config
                 Config? config = CamManager.Configs.Where(c => c.Id == avConfigId).FirstOrDefault();
                 if (config != null)
@@ -55,6 +109,11 @@ namespace CamerasInfo.Managers
                 }
                 else
                     throw new Exception("Configuration not found.");
+
+                /*MongoClient readClient = new MongoClient(ConnectionString);
+                IMongoDatabase database = Client.GetDatabase(DatabaseName);
+                IMongoCollection<BsonDocument> collection = mongoDatabase.GetCollection<BsonDocument>(CollectionName);
+
 
                 var filterBuilder = Builders<BsonDocument>.Filter;
                 var builder = Builders<BsonDocument>.Filter;
@@ -67,20 +126,23 @@ namespace CamerasInfo.Managers
 
 
 
-                var queryOfflineRec = mongoCollection.Find(filters);
-                List<BsonDocument> listOffline = queryOfflineRec.ToList();
+                var queryOfflineRec = collection.Find(filters);
+                List<BsonDocument> listOffline = queryOfflineRec.ToList();*/
+                List<BsonDocument> listOffline = await GetDataHourlyAsync(avConfigId, varificationTime.Second, 3600);
 
-                var allFilter = builder.And(new FilterDefinition<BsonDocument>[]
+                /*var allFilter = builder.And(new FilterDefinition<BsonDocument>[]
                 {
                     builder.Gte("DateTime", varificationTime)
-                });
+                });*/
+
+
                 // Retrieve all documents from the collection
-                List<BsonDocument> allDocuments = mongoCollection.Find(allFilter).ToList();
-                totalTime = Disponibility.CalculateTotalTime(allDocuments);
+                //List<BsonDocument> allDocuments = mongoCollection.Find(allFilter).ToList();
+                //totalTime = Disponibility.CalculateTotalTime(allDocuments);
 
                 //calculate offline time 
                 //TimeSpan offlineTime = Disponibility.CalculateOfflineTime(listOffline);
-                float calcDisponibility = Disponibility.CalcPercentageDisponibility(listOffline, totalTime, config.PingsToOffline);
+                float calcDisponibility = Disponibility.CalcPercentageDisponibility(listOffline, config.VerificationTime, config.PingsToOffline);
 
                 return calcDisponibility;
 
@@ -108,7 +170,7 @@ namespace CamerasInfo.Managers
                     return doc.Counter;
                 return -1;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 return -1;

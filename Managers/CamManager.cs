@@ -85,7 +85,7 @@ namespace CamerasInfo.Managers
 
                 foreach (Config conf in avConfigs)
                 {
-                    float percentDisponibility = MongoDbManager.GetDisponibility(conf.Id);
+                    float percentDisponibility = await MongoDbManager.GetDisponibilityAsync(conf.Id);
                     conf.Value = percentDisponibility;
                     _ = _avConfigService.PutConfig(conf.Id, conf);
                     Console.WriteLine($"Config {conf.Id} has {percentDisponibility}% disponibility.");

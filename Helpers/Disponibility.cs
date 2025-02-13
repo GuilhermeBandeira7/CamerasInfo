@@ -10,9 +10,9 @@ namespace CamerasInfo
 {
     public static class Disponibility
     {
-        public static float CalcPercentageDisponibility(List<BsonDocument> mongoRecords, TimeSpan totalTime, int pingsToOffline)
+        public static float CalcPercentageDisponibility(List<BsonDocument> mongoRecords, double totalTime, int pingsToOffline)
         {
-            List < Ping_MongoDB > l = new();
+            List <Ping_MongoDB> l = new();
             foreach (var document in mongoRecords)
                 l.Add(BsonSerializer.Deserialize<Ping_MongoDB>(document));
 
@@ -53,10 +53,10 @@ namespace CamerasInfo
             return timeOffline;
         }
 
-        private static float ReturnDisponibility(TimeSpan tOffline, TimeSpan totalTime)
+        private static float ReturnDisponibility(TimeSpan tOffline, double totalTime)
         {
-            float offlineFraction = (float)tOffline.TotalSeconds / (float)totalTime.TotalSeconds;
-            float onlinePercentage = (1 - offlineFraction) * (float)100;
+            double offlineFraction = (double)tOffline.TotalSeconds / totalTime;
+            float onlinePercentage = (1 - (float)offlineFraction) * (float)100;
 
             return onlinePercentage;
         }
