@@ -4,6 +4,7 @@ using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -39,7 +40,7 @@ namespace CamerasInfo.Managers
             mongoCollection.InsertOne(document);
         }
 
-        public static async Task<List<BsonDocument>> GetDataHourlyAsync(long avConfigId, long verificationTime, int segmentSize)
+        public static async Task<List<BsonDocument>> GetDataHourlyAsync(long avConfigId, DateTime start, DateTime end, int segmentSize)
         {
             var filterBuilder = Builders<BsonDocument>.Filter;
             var builder = Builders<BsonDocument>.Filter;
@@ -50,15 +51,15 @@ namespace CamerasInfo.Managers
             // Create a list of tasks to query each hourly data
             List<Task<List<BsonDocument>>> tasks = new();
 
-            double steps = verificationTime/segmentSize;
+            double steps = (end-start).TotalSeconds/ segmentSize;
 
 
             // Loop through each hour in the month
             for (int index = 0; index < steps; index++)
             {
                 // Calculate the range for the hour
-                var startOfHour = verificationTime + (index * segmentSize);  // Verification time + number of seconds per hour
-                var endOfHour = startOfHour + segmentSize;  // One hour later
+                var startOfHour = start.AddSeconds(index * segmentSize);  // Verification time + number of seconds per hour
+                var endOfHour = startOfHour.AddSeconds(segmentSize);  // One hour later
 
                 // Build the filter for the current hour range
                 var filters = builder.And(new FilterDefinition<BsonDocument>[]
@@ -103,9 +104,13 @@ namespace CamerasInfo.Managers
                 Config? config = CamManager.Configs.Where(c => c.Id == avConfigId).FirstOrDefault();
                 if (config != null)
                 {
-                    DateTime dateTime = DateTime.Now.AddSeconds(-config.VerificationTime);
-                    varificationTime = dateTime;
+                    DateTime end = DateTime.Now;
+                    DateTime start = end.AddSeconds(-config.VerificationTime);
+                    List<BsonDocument> listOffline = await GetDataHourlyAsync(avConfigId, start, end, 3600);
 
+
+                    float calcDisponibility = Disponibility.CalcPercentageDisponibility(listOffline, config.VerificationTime, config.PingsToOffline);
+                    return calcDisponibility;
                 }
                 else
                     throw new Exception("Configuration not found.");
@@ -128,7 +133,7 @@ namespace CamerasInfo.Managers
 
                 var queryOfflineRec = collection.Find(filters);
                 List<BsonDocument> listOffline = queryOfflineRec.ToList();*/
-                List<BsonDocument> listOffline = await GetDataHourlyAsync(avConfigId, varificationTime.Second, 3600);
+           
 
                 /*var allFilter = builder.And(new FilterDefinition<BsonDocument>[]
                 {
@@ -142,9 +147,7 @@ namespace CamerasInfo.Managers
 
                 //calculate offline time 
                 //TimeSpan offlineTime = Disponibility.CalculateOfflineTime(listOffline);
-                float calcDisponibility = Disponibility.CalcPercentageDisponibility(listOffline, config.VerificationTime, config.PingsToOffline);
-
-                return calcDisponibility;
+            
 
             }
             catch (Exception ex)
