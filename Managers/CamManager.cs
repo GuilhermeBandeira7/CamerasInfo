@@ -34,11 +34,11 @@ namespace CamerasInfo.Managers
                 //DbChangeTracker.InitializeWatcher();
                 //Return the disponibility of every config associated with a camera on the database.
                 Task.Run(ReturnDisponibility);
-                Task.Run(UpdateStatusAndVerificationOfCameras);
+               /* Task.Run(UpdateStatusAndVerificationOfCameras);
                 //Get all cameras from renovias database
              
                 if (cameras.Any() && cameras != null)
-                    PingConfiguredCameras();
+                    PingConfiguredCameras();*/
 
             }
             catch (PingException pEx)
