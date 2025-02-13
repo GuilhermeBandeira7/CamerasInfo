@@ -62,10 +62,11 @@ namespace CamerasInfo.Managers
                     float percentDisponibility = MongoDbManager.GetDisponibility(conf.Id);
                     conf.Value = percentDisponibility;
                     _ = _avConfigService.PutConfig(conf.Id, conf);
-                    Console.WriteLine($"Config {conf.Id} has {percentDisponibility}% disponibility.");
+                    //Console.WriteLine($"Config {conf.Id} has {percentDisponibility}% disponibility.");
                     Thread.Sleep(100);
                 }
-                Thread.Sleep(5000);
+
+                Thread.Sleep(30000);
             }
         }
 
@@ -83,10 +84,11 @@ namespace CamerasInfo.Managers
                     Config cameraConfig = camera.AvailabilityConfigs.First();
                     if (camera.AvailabilityConfigs.Select(x => x.Id).Contains(config.Id))
                     {
-                        Task t = Task.Run(() => PingConfiguredCamera(config, camera));
+                        Task.Run(() => PingConfiguredCamera(config, camera));
+                        /*Task t = Task.Run(() => PingConfiguredCamera(config, camera));
 
                         if (!PingTasks.ContainsKey(config.Id))
-                            PingTasks.Add(config.Id, t);
+                            PingTasks.Add(config.Id, t);*/
                     }
                 }
             }
@@ -107,6 +109,7 @@ namespace CamerasInfo.Managers
                             if (camera == null)
                                 continue;
 
+                            Console.WriteLine($"Save verification for cam {cam.Id}");
                             cam.LastVerification = camera.LastVerification;
                             cam.Status = camera.Status;
 
@@ -123,6 +126,8 @@ namespace CamerasInfo.Managers
                     if(CamHelper.Count() > 0)   
                         CamHelper.Clear(); 
                 }
+
+                Thread.Sleep(20000);
             }
         }
 
@@ -134,7 +139,8 @@ namespace CamerasInfo.Managers
         private static void PingConfiguredCamera(Config config, Camera camToPing)
         {
             //Creates new document template to save on Mongo DB.
-            Ping_MongoDB mongoDoc = new Ping_MongoDB();
+
+            Ping_MongoDB mongoDoc = new();
 
             DateTime intervalToPing = DateTime.Now;
             mongoDoc.AvailabilityConfig = config.Id;
@@ -150,13 +156,13 @@ namespace CamerasInfo.Managers
                     intervalToPing = DateTime.Now;
 
                     //I nitalize async task to ping.
-                    Task.Run(async () =>
+                    Task.Run(() =>
                     {
                         try
                         {
-                            Ping PingSender = new Ping();
+                            Ping PingSender = new();
                             DateTime pingTime = DateTime.Now;
-                            mongoDoc.DateTime = DateTime.Now;    
+                            mongoDoc.DateTime = DateTime.Now;
 
                             //Get the Ping response.                  
                             PingReply PingReply = PingSender.Send(camToPing.Ip); //PingCamera(camToPing.Ip);
@@ -165,9 +171,9 @@ namespace CamerasInfo.Managers
 
                             if (PingReply.Status == IPStatus.Success)
                             {
-                                config.currentStatus = "online";                              
+                                config.currentStatus = "online";
                                 Console.WriteLine($"Ping to {camToPing.Ip} with config {config.Id} was successful.");
-                            }                                            
+                            }
                         }
                         catch (PingException pEx)
                         {
@@ -187,7 +193,7 @@ namespace CamerasInfo.Managers
                             {
                                 CameraID = camToPing.Id,
                                 Status = config.currentStatus,
-                                LastVerification = DateTime.UtcNow
+                                LastVerification = DateTime.Now
                             };
                             lock (CamHelper)
                                 CamHelper.Add(helper);

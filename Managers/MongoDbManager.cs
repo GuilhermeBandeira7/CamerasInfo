@@ -31,7 +31,7 @@ namespace CamerasInfo.Managers
             {
                 {"AvailabilityConfig", mongoDoc.AvailabilityConfig},
                 {"Counter", mongoDoc.Counter},
-                {"DateTime", DateTime.SpecifyKind(mongoDoc.DateTime, DateTimeKind.Utc) },
+                {"DateTime", DateTime.SpecifyKind(mongoDoc.DateTime, DateTimeKind.Local) },
                 {"Status", mongoDoc.Status }
             };
 
@@ -49,7 +49,7 @@ namespace CamerasInfo.Managers
                 Config? config = CamManager.Configs.Where(c => c.Id == avConfigId).FirstOrDefault();
                 if (config != null)
                 {
-                    DateTime dateTime = DateTime.UtcNow.AddSeconds(-config.VerificationTime);
+                    DateTime dateTime = DateTime.Now.AddSeconds(-config.VerificationTime);
                     varificationTime = dateTime;
 
                 }

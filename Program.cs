@@ -10,10 +10,11 @@ namespace CamerasInfo
         static void Main(string[] args)
         {
             Dialog.Dialog.InitialDialogAsync();
+            ThreadPool.SetMinThreads(400, 400);
 
             while (true)
             {
-                Thread.Sleep(10000);
+                Thread.Sleep(100);
             }
 
         }
