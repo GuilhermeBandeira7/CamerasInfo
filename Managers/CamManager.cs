@@ -30,11 +30,13 @@ namespace CamerasInfo.Managers
         {
             try
             {
+                cameras = _service.GetCameras();
                 //DbChangeTracker.InitializeWatcher();
                 //Return the disponibility of every config associated with a camera on the database.
                 Task.Run(ReturnDisponibility);
+                Task.Run(UpdateStatusAndVerificationOfCameras);
                 //Get all cameras from renovias database
-                cameras = _service.GetCameras();
+             
                 if (cameras.Any() && cameras != null)
                     PingConfiguredCameras();
 
@@ -48,34 +50,13 @@ namespace CamerasInfo.Managers
                 Console.WriteLine(ex.Message);
             }
         }
-        
-        private static async Task ReturnDisponibility()
-        {
-            while(true)
-            {
-                avConfigs = await _avConfigService.GetConfigs();
-                if (!avConfigs.Any())
-                    throw new PingException("No config found.");
-
-                foreach (Config conf in avConfigs)
-                {
-                    float percentDisponibility = MongoDbManager.GetDisponibility(conf.Id);
-                    conf.Value = percentDisponibility;
-                    _ = _avConfigService.PutConfig(conf.Id, conf);
-                    //Console.WriteLine($"Config {conf.Id} has {percentDisponibility}% disponibility.");
-                    Thread.Sleep(100);
-                }
-
-                Thread.Sleep(30000);
-            }
-        }
 
         private static void PingConfiguredCameras()
         {
             if (!Configs.Any())
                 throw new PingException("No configuration found.");
 
-            Task.Run(UpdateStatusAndVerificationOfCameras);
+
 
             foreach (Camera camera in cameras)
             {
@@ -91,6 +72,28 @@ namespace CamerasInfo.Managers
                             PingTasks.Add(config.Id, t);*/
                     }
                 }
+            }
+        }
+
+        private static async Task ReturnDisponibility()
+        {
+            while(true)
+            {
+                avConfigs = await _avConfigService.GetConfigs();
+                if (!avConfigs.Any())
+                    throw new PingException("No config found.");
+
+                foreach (Config conf in avConfigs)
+                {
+                    float percentDisponibility = MongoDbManager.GetDisponibility(conf.Id);
+                    conf.Value = percentDisponibility;
+                    _ = _avConfigService.PutConfig(conf.Id, conf);
+                    Console.WriteLine($"Config {conf.Id} has {percentDisponibility}% disponibility.");
+                    Thread.Sleep(100);
+                }
+
+
+                Thread.Sleep(30000);
             }
         }
 
