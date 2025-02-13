@@ -88,7 +88,7 @@ namespace CamerasInfo.Managers
                     float percentDisponibility = await MongoDbManager.GetDisponibilityAsync(conf.Id);
                     conf.Value = percentDisponibility;
                     _ = _avConfigService.PutConfig(conf.Id, conf);
-                    Console.WriteLine($"Config {conf.Id} has {percentDisponibility}% disponibility.");
+                    //Console.WriteLine($"Config {conf.Id} has {percentDisponibility}% disponibility.");
                     Thread.Sleep(100);
                 }
 
@@ -189,7 +189,7 @@ namespace CamerasInfo.Managers
                         {
                             mongoDoc.Status = config.currentStatus;
                             MongoDbManager.SaveToMongo(mongoDoc);
-
+                            Console.WriteLine($"Ping to {camToPing.Ip} with config {config.Id} returned {config.currentStatus}.");
                             //intermediary object to help setting up status and last verification time on the database.
                             CameraHelper helper = new()
                             {
