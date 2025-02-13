@@ -93,7 +93,6 @@ namespace CamerasInfo.Managers
                 }
 
 
-                Thread.Sleep(30000);
             }
         }
 

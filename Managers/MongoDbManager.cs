@@ -73,12 +73,34 @@ namespace CamerasInfo.Managers
                 // Add the task to the list
                 tasks.Add(Task.Run(async () =>
                 {
+                    const int maxRetries = 10;
+                    int retries = 0;
+                    List<BsonDocument>? queryResult = null;
+
                     MongoClient readClient = new(ConnectionString);
                     IMongoDatabase database = readClient.GetDatabase(DatabaseName);
                     IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(CollectionName);
 
-                    var queryResult = await collection.Find(filters).ToListAsync();
-                    return queryResult;
+                    while (retries < maxRetries)
+                    {
+                        try
+                        {
+                    
+                            queryResult = await collection.Find(filters).ToListAsync();
+                            break;  // If the query is successful, break out of the retry loop
+                        }
+                        catch when (retries < maxRetries)
+                        {
+                            retries++;
+                            Console.WriteLine($"Connection attempt {retries} failed. Retrying in {retries * 2} seconds...");
+                            await Task.Delay(retries * 2000);  // Exponential backoff (2, 4, 6, 8 seconds, etc.)
+                        }
+                    }
+
+                    if (queryResult == null)
+                        throw new Exception("Out of connections");
+
+                    return queryResult ?? new List<BsonDocument>();
                 }));
             }
 
@@ -96,8 +118,7 @@ namespace CamerasInfo.Managers
 
         public static async Task<float> GetDisponibilityAsync(int avConfigId)
         {
-            try
-            {
+     
                 DateTime varificationTime;
                 //TimeSpan totalTime = new();
                 //Get the config
@@ -149,12 +170,7 @@ namespace CamerasInfo.Managers
                 //TimeSpan offlineTime = Disponibility.CalculateOfflineTime(listOffline);
             
 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return -1;
-            }
+        
         }
 
         public static long DocumentLastCount(long avConfigId)
