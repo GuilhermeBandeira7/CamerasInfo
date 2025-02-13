@@ -112,7 +112,7 @@ namespace CamerasInfo.Managers
                             if (camera == null)
                                 continue;
 
-                            Console.WriteLine($"Save verification for cam {cam.Id}");
+                            //Console.WriteLine($"Save verification for cam {cam.Id}");
                             cam.LastVerification = camera.LastVerification;
                             cam.Status = camera.Status;
 
@@ -175,7 +175,7 @@ namespace CamerasInfo.Managers
                             if (PingReply.Status == IPStatus.Success)
                             {
                                 config.currentStatus = "online";
-                                Console.WriteLine($"Ping to {camToPing.Ip} with config {config.Id} was successful.");
+                                //Console.WriteLine($"Ping to {camToPing.Ip} with config {config.Id} was successful.");
                             }
                         }
                         catch (PingException pEx)
